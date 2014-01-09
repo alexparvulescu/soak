@@ -16,7 +16,7 @@
         </license>
     </licenses>
     <properties>
-        <oak.version>0.11-SNAPSHOT</oak.version>
+        <oak.version>0.15-SNAPSHOT</oak.version>
         <scala.version>2.10.3</scala.version>
         <lucene.version>4.3.0</lucene.version>
         <maven.compiler.source>1.6</maven.compiler.source>

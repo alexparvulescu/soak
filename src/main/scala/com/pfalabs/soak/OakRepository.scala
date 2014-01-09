@@ -1,9 +1,7 @@
 package com.pfalabs.soak
 
 import java.io.File
-
-import scala.collection.JavaConversions.mapAsJavaMap
-
+import scala.collection.JavaConversions._
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.api.ContentSession
@@ -17,7 +15,7 @@ import org.apache.jackrabbit.oak.plugins.index.nodetype.NodeTypeIndexProvider
 import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexEditorProvider
 import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexProvider
 import org.apache.jackrabbit.oak.plugins.name.NameValidatorProvider
-import org.apache.jackrabbit.oak.plugins.name.NamespaceValidatorProvider
+import org.apache.jackrabbit.oak.plugins.name.NamespaceEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.RegistrationEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.TypeEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.write.InitialContent
@@ -34,10 +32,21 @@ import org.apache.jackrabbit.oak.spi.security.user.UserConstants
 import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction
 import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
-
+import scala.util.{ Try, Failure, Success }
+import javax.jcr.Credentials
 import javax.jcr.GuestCredentials
 import javax.jcr.SimpleCredentials
 import javax.security.auth.login.Configuration
+import scala.collection.immutable.Map
+import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants
+import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration
+import org.apache.jackrabbit.oak.spi.security.user.UserConstants
+import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction
+import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants
+import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
+import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
+import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceEditorProvider
+import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceIndexProvider
 
 trait OakRepository {
 
@@ -48,21 +57,12 @@ trait OakRepository {
     repository = Some(createRepository(fname))
   }
 
-  def login(u: String, p: String): Either[String, ContentSession] = login(repository.get, u, p) match {
-    case Right(u) ⇒ {
-      return Right(u);
-    }
-    case Left(u) ⇒ {
-      return Left(u);
-    }
-  }
-
   // ----------------------------------------------------
   // OAK REPOSITORY
   // ----------------------------------------------------
 
   private[soak] def createRepository(fname: String): ContentRepository =
-    new Oak(new SegmentNodeStore(new FileStore(new File(fname), 268435456, true)))
+    new Oak(new SegmentNodeStore(new FileStore(new File(fname), 256, true)))
       .`with`(new InitialContent())
 
       .`with`(JcrConflictHandler.JCR_CONFLICT_HANDLER)
@@ -71,10 +71,12 @@ trait OakRepository {
       .`with`(new SecurityProviderImpl(buildSecurityConfig()))
 
       .`with`(new NameValidatorProvider())
-      .`with`(new NamespaceValidatorProvider())
+      .`with`(new NamespaceEditorProvider())
       .`with`(new TypeEditorProvider())
       .`with`(new RegistrationEditorProvider())
       .`with`(new ConflictValidatorProvider())
+      .`with`(new ReferenceEditorProvider())
+      .`with`(new ReferenceIndexProvider())
 
       .`with`(new PropertyIndexEditorProvider())
 
@@ -87,37 +89,8 @@ trait OakRepository {
       .createContentRepository();
 
   // ----------------------------------------------------
-  // OAK SESSION
-  // ----------------------------------------------------
-
-  private def guestSession(repository: Option[ContentRepository]): Option[ContentSession] =
-    repository match {
-      case Some(r) ⇒ Some(r.login(new GuestCredentials(), null));
-      case None ⇒ None;
-    }
-
-  private def login(repo: ContentRepository, u: String, p: String): Either[String, ContentSession] =
-    try {
-      return Right(repo.login(new SimpleCredentials(u, p.toCharArray()), null));
-    } catch {
-      case e: Exception ⇒ {
-        e.printStackTrace()
-        Left(e.getMessage());
-      }
-    }
-
-  // ----------------------------------------------------
   // OAK Security Setup?
   // ----------------------------------------------------
-
-  import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
-  import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration;
-  import org.apache.jackrabbit.oak.spi.security.user.UserConstants;
-  import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction;
-  import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants;
-  import org.apache.jackrabbit.oak.spi.xml.ImportBehavior;
-  import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter;
-  import scala.collection.JavaConversions._
 
   private def buildSecurityConfig(): ConfigurationParameters = {
     val userConfig: Map[String, Object] = Map(
