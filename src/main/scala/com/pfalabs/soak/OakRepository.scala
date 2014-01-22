@@ -16,7 +16,6 @@ import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexEditorProvi
 import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexProvider
 import org.apache.jackrabbit.oak.plugins.name.NameValidatorProvider
 import org.apache.jackrabbit.oak.plugins.name.NamespaceEditorProvider
-import org.apache.jackrabbit.oak.plugins.nodetype.RegistrationEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.TypeEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.write.InitialContent
 import org.apache.jackrabbit.oak.plugins.segment.SegmentNodeStore
@@ -47,22 +46,28 @@ import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
 import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
 import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceEditorProvider
 import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceIndexProvider
+import org.apache.jackrabbit.oak.spi.state.NodeStore
 
 trait OakRepository {
 
   var repository: Option[ContentRepository] = None;
 
+  var store: Option[NodeStore] = None
+
   def initOak(fname: String) = {
     Configuration.setConfiguration(ConfigurationUtil.getJackrabbit2Configuration(ConfigurationParameters.EMPTY));
-    repository = Some(createRepository(fname))
+    store = Some(newNodeStore(fname));
+    repository = Some(createRepository(store.get))
   }
 
   // ----------------------------------------------------
   // OAK REPOSITORY
   // ----------------------------------------------------
 
-  private[soak] def createRepository(fname: String): ContentRepository =
-    new Oak(new SegmentNodeStore(new FileStore(new File(fname), 256, true)))
+  private def newNodeStore(fname: String) = new SegmentNodeStore(new FileStore(new File(fname), 256, true))
+  
+  private def createRepository(store:NodeStore): ContentRepository =
+    new Oak(store)
       .`with`(new InitialContent())
 
       .`with`(JcrConflictHandler.JCR_CONFLICT_HANDLER)
@@ -73,7 +78,6 @@ trait OakRepository {
       .`with`(new NameValidatorProvider())
       .`with`(new NamespaceEditorProvider())
       .`with`(new TypeEditorProvider())
-      .`with`(new RegistrationEditorProvider())
       .`with`(new ConflictValidatorProvider())
       .`with`(new ReferenceEditorProvider())
       .`with`(new ReferenceIndexProvider())
@@ -86,6 +90,7 @@ trait OakRepository {
       .`with`(new LuceneInitializerHelper("luceneGlobal", LuceneIndexHelper.JR_PROPERTY_INCLUDES).async())
       .`with`(new LuceneIndexEditorProvider())
       .`with`(new LuceneIndexProvider())
+      .withAsyncIndexing()
       .createContentRepository();
 
   // ----------------------------------------------------
