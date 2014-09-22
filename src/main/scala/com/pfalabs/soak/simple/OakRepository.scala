@@ -1,19 +1,19 @@
-package com.pfalabs.soak
+package com.pfalabs.soak.simple
 
 import java.io.File
-import scala.collection.JavaConversions._
+
+import scala.collection.JavaConversions.mapAsJavaMap
+import scala.collection.immutable.Map
+
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
-import org.apache.jackrabbit.oak.api.ContentSession
 import org.apache.jackrabbit.oak.plugins.commit.ConflictValidatorProvider
 import org.apache.jackrabbit.oak.plugins.commit.JcrConflictHandler
-import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexEditorProvider
-import org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexProvider
-import org.apache.jackrabbit.oak.plugins.index.lucene.util.LuceneIndexHelper
-import org.apache.jackrabbit.oak.plugins.index.lucene.util.LuceneInitializerHelper
 import org.apache.jackrabbit.oak.plugins.index.nodetype.NodeTypeIndexProvider
 import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexEditorProvider
 import org.apache.jackrabbit.oak.plugins.index.property.PropertyIndexProvider
+import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceEditorProvider
+import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceIndexProvider
 import org.apache.jackrabbit.oak.plugins.name.NameValidatorProvider
 import org.apache.jackrabbit.oak.plugins.name.NamespaceEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.TypeEditorProvider
@@ -29,24 +29,11 @@ import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants
 import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration
 import org.apache.jackrabbit.oak.spi.security.user.UserConstants
 import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction
-import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
-import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
-import scala.util.{ Try, Failure, Success }
-import javax.jcr.Credentials
-import javax.jcr.GuestCredentials
-import javax.jcr.SimpleCredentials
-import javax.security.auth.login.Configuration
-import scala.collection.immutable.Map
-import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants
-import org.apache.jackrabbit.oak.spi.security.user.UserConfiguration
-import org.apache.jackrabbit.oak.spi.security.user.UserConstants
-import org.apache.jackrabbit.oak.spi.security.user.action.AccessControlAction
-import org.apache.jackrabbit.oak.spi.security.privilege.PrivilegeConstants
-import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
-import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
-import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceEditorProvider
-import org.apache.jackrabbit.oak.plugins.index.reference.ReferenceIndexProvider
 import org.apache.jackrabbit.oak.spi.state.NodeStore
+import org.apache.jackrabbit.oak.spi.xml.ImportBehavior
+import org.apache.jackrabbit.oak.spi.xml.ProtectedItemImporter
+
+import javax.security.auth.login.Configuration
 
 trait OakRepository {
 
@@ -56,8 +43,8 @@ trait OakRepository {
 
   def initOak(fname: String) = {
     Configuration.setConfiguration(ConfigurationUtil.getJackrabbit2Configuration(ConfigurationParameters.EMPTY));
-    store = Some(newNodeStore(fname));
-    repository = Some(createRepository(store.get))
+    store=Some(newNodeStore(fname))
+    repository=Some(createRepository(store.get))
   }
 
   // ----------------------------------------------------
@@ -65,33 +52,32 @@ trait OakRepository {
   // ----------------------------------------------------
 
   private def newNodeStore(fname: String) = new SegmentNodeStore(new FileStore(new File(fname), 256, true))
-  
-  private def createRepository(store:NodeStore): ContentRepository =
-    new Oak(store)
-      .`with`(new InitialContent())
 
-      .`with`(JcrConflictHandler.JCR_CONFLICT_HANDLER)
-      .`with`(new EditorHook(new VersionEditorProvider()))
+  private def createRepository(store:NodeStore): ContentRepository =     (new Oak(store))
+    .`with`(new InitialContent())
 
-      .`with`(new SecurityProviderImpl(buildSecurityConfig()))
+    .`with`(JcrConflictHandler.JCR_CONFLICT_HANDLER)
+    .`with`(new EditorHook(new VersionEditorProvider()))
 
-      .`with`(new NameValidatorProvider())
-      .`with`(new NamespaceEditorProvider())
-      .`with`(new TypeEditorProvider())
-      .`with`(new ConflictValidatorProvider())
-      .`with`(new ReferenceEditorProvider())
-      .`with`(new ReferenceIndexProvider())
+    .`with`(new SecurityProviderImpl(buildSecurityConfig()))
 
-      .`with`(new PropertyIndexEditorProvider())
+    .`with`(new NameValidatorProvider())
+    .`with`(new NamespaceEditorProvider())
+    .`with`(new TypeEditorProvider())
+    .`with`(new ConflictValidatorProvider())
+    .`with`(new ReferenceEditorProvider())
+    .`with`(new ReferenceIndexProvider())
 
-      .`with`(new PropertyIndexProvider())
-      .`with`(new NodeTypeIndexProvider())
+    .`with`(new PropertyIndexEditorProvider())
 
-      .`with`(new LuceneInitializerHelper("luceneGlobal", LuceneIndexHelper.JR_PROPERTY_INCLUDES).async())
-      .`with`(new LuceneIndexEditorProvider())
-      .`with`(new LuceneIndexProvider())
-      .withAsyncIndexing()
-      .createContentRepository();
+    .`with`(new PropertyIndexProvider())
+    .`with`(new NodeTypeIndexProvider())
+
+//      .`with`(new LuceneInitializerHelper("luceneGlobal", LuceneIndexHelper.JR_PROPERTY_INCLUDES).async())
+//      .`with`(new LuceneIndexEditorProvider())
+//      .`with`(new LuceneIndexProvider())
+//      .withAsyncIndexing()
+    .createContentRepository();
 
   // ----------------------------------------------------
   // OAK Security Setup?

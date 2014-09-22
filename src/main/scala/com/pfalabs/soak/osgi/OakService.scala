@@ -1,0 +1,91 @@
+package com.pfalabs.soak.osgi
+
+import java.util.Hashtable
+
+import org.apache.felix.scr.annotations.Reference
+import org.apache.felix.scr.annotations.ReferencePolicy._
+import org.apache.felix.scr.annotations.ReferencePolicyOption._
+import org.apache.jackrabbit.oak.Oak
+import org.apache.jackrabbit.oak.api.ContentRepository
+import org.apache.jackrabbit.oak.osgi.OsgiWhiteboard
+import org.apache.jackrabbit.oak.plugins.commit.ConflictValidatorProvider
+import org.apache.jackrabbit.oak.plugins.commit.JcrConflictHandler
+import org.apache.jackrabbit.oak.plugins.itemsave.ItemSaveValidatorProvider
+import org.apache.jackrabbit.oak.plugins.name.NameValidatorProvider
+import org.apache.jackrabbit.oak.plugins.name.NamespaceEditorProvider
+import org.apache.jackrabbit.oak.plugins.nodetype.TypeEditorProvider
+import org.apache.jackrabbit.oak.plugins.nodetype.write.InitialContent
+import org.apache.jackrabbit.oak.plugins.version.VersionEditorProvider
+import org.apache.jackrabbit.oak.spi.commit.EditorHook
+import org.apache.jackrabbit.oak.spi.security.SecurityProvider
+import org.apache.jackrabbit.oak.spi.state.NodeStore
+import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard
+import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexEditorProvider
+import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexProvider
+import org.osgi.framework.ServiceRegistration
+import org.osgi.service.component.ComponentContext
+
+trait OakService {
+
+  val DEFAULT_WORKSPACE_NAME = "oak";
+
+  @Reference(policy = STATIC, policyOption = GREEDY)
+  var store: NodeStore = null
+
+  @Reference(policy = STATIC, policyOption = GREEDY)
+  val securityProvider: SecurityProvider = null
+
+  val indexProvider = new WhiteboardIndexProvider()
+
+  val indexEditorProvider = new WhiteboardIndexEditorProvider()
+
+  var repositoryServiceReference: Option[ServiceRegistration] = None
+
+  def doActivate(context: ComponentContext) {
+    val whiteboard = new OsgiWhiteboard(context.getBundleContext())
+
+    indexProvider.start(whiteboard)
+    indexEditorProvider.start(whiteboard)
+    val repository = new OSGiContentRepository(this.createRepository(whiteboard))
+    repositoryServiceReference = Some(context.getBundleContext().registerService(classOf[ContentRepository].getName(), repository, new Hashtable[String, Object]()))
+
+  }
+
+  def doDeactivate() {
+    indexProvider.stop();
+    indexEditorProvider.stop();
+
+    repositoryServiceReference.foreach(_.unregister())
+    repositoryServiceReference = None;
+  }
+
+  //----------------------------------------------------------------------------------------------------< private >---
+
+  def createRepository(whiteboard: Whiteboard) = {
+
+    val oak = new Oak(store)
+      .`with`(whiteboard)
+      .`with`(new InitialContent())
+
+      .`with`(JcrConflictHandler.JCR_CONFLICT_HANDLER)
+      .`with`(new EditorHook(new VersionEditorProvider()))
+
+      .`with`(securityProvider)
+
+      .`with`(new ItemSaveValidatorProvider())
+      .`with`(new NameValidatorProvider())
+      .`with`(new NamespaceEditorProvider())
+      .`with`(new TypeEditorProvider())
+      .`with`(new ConflictValidatorProvider())
+
+      // index stuff
+      .`with`(indexProvider)
+      .`with`(indexEditorProvider)
+
+      // ws stuff
+      .`with`(DEFAULT_WORKSPACE_NAME)
+
+    oak.createContentRepository()
+  }
+
+}
