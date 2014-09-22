@@ -5,7 +5,7 @@
     <groupId>com.pfalabs</groupId>
     <artifactId>com.pfalabs.soak</artifactId>
     <packaging>bundle</packaging>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>Scala Oak</name>
     <description>Scala Oak Support</description>
     <licenses>
