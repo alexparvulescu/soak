@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pfalabs</groupId>
-    <artifactId>com.pfalabs.soak</artifactId>
+    <artifactId>com.pfalabs.soak_2.11</artifactId>
     <packaging>bundle</packaging>
     <version>0.0.3-SNAPSHOT</version>
     <name>Scala Oak</name>
@@ -20,8 +20,8 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.10.4</scala.version>
-        <oak.version>1.0.5</oak.version>
+        <scala.version>2.11.4</scala.version>
+        <oak.version>1.1.6</oak.version>
         <lucene.version>4.7.1</lucene.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.0.11</logback.version>
