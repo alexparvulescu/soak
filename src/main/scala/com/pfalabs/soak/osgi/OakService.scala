@@ -1,7 +1,6 @@
 package com.pfalabs.soak.osgi
 
 import java.util.Hashtable
-
 import org.apache.felix.scr.annotations.Reference
 import org.apache.felix.scr.annotations.ReferencePolicy.STATIC
 import org.apache.felix.scr.annotations.ReferencePolicyOption.GREEDY
@@ -20,6 +19,8 @@ import org.apache.jackrabbit.oak.spi.state.NodeStore
 import org.apache.jackrabbit.oak.spi.whiteboard.{ Whiteboard, WhiteboardIndexEditorProvider, WhiteboardIndexProvider }
 import org.osgi.framework.ServiceRegistration
 import org.osgi.service.component.ComponentContext
+import java.io.Closeable
+import org.apache.commons.io.IOUtils
 
 trait OakService {
 
@@ -35,7 +36,7 @@ trait OakService {
 
   val indexEditorProvider = new WhiteboardIndexEditorProvider()
 
-  var repositoryServiceReference: Option[ServiceRegistration] = None
+  var repositoryServiceReference: Option[(ServiceRegistration, OSGiContentRepository)] = None
 
   def doActivate(context: ComponentContext) {
     val whiteboard = new OsgiWhiteboard(context.getBundleContext())
@@ -43,15 +44,18 @@ trait OakService {
     indexProvider.start(whiteboard)
     indexEditorProvider.start(whiteboard)
     val repository = new OSGiContentRepository(this.createRepository(whiteboard))
-    repositoryServiceReference = Some(context.getBundleContext().registerService(classOf[ContentRepository].getName(), repository, new Hashtable[String, Object]()))
-
+    val registration = context.getBundleContext().registerService(classOf[ContentRepository].getName(), repository, new Hashtable[String, Object]())
+    repositoryServiceReference = Some(registration, repository)
   }
 
   def doDeactivate() {
     indexProvider.stop();
     indexEditorProvider.stop();
 
-    repositoryServiceReference.foreach(_.unregister())
+    repositoryServiceReference.foreach(r => {
+      r._1.unregister()
+      r._2.close()
+    })
     repositoryServiceReference = None;
   }
 

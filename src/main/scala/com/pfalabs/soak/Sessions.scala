@@ -4,36 +4,52 @@ import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.api.ContentSession
 import javax.jcr.GuestCredentials
 import org.apache.jackrabbit.oak.api.Root
+import javax.jcr.SimpleCredentials
+import javax.jcr.Credentials
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 object Sessions {
 
-  def withLatestRoot[U](repository: ContentRepository, m: (Root) => U): U = {
-    val s = guestSession(repository)
-    val root = s.getLatestRoot();
+  // ----------------------------------------------------
+  // OAK SESSION OPS
+  // ----------------------------------------------------
+
+  type RepoOpF[U] = (Root) => U
+
+  def run[U](u: String, p: String)(o: RepoOpF[U])(implicit r: ContentRepository): Try[U] =
+    login(u, p)(r).map { s => run(s)(o) }
+
+  def run[U](c: Credentials)(o: RepoOpF[U])(implicit r: ContentRepository): Try[U] =
+    login(c)(r).map { s => run(s)(o) }
+
+  def runAsAdmin[U](o: RepoOpF[U])(implicit r: ContentRepository): Try[U] =
+    asAdmin(r).map { s => try { run(s)(o) } finally { s.close } }
+
+  def runAsGuest[U](o: RepoOpF[U])(implicit r: ContentRepository): Try[U] =
+    asGuest(r).map { s => try { run(s)(o) } finally { s.close } }
+
+  def run[U](s: ContentSession)(o: RepoOpF[U]): U =
+    o.apply(s.getLatestRoot)
+
+  // ----------------------------------------------------
+  // OAK SESSION LOGIN
+  // ----------------------------------------------------
+
+  def asAdmin(implicit r: ContentRepository): Try[ContentSession] = login("admin", "admin")(r)
+
+  def login(user: String, password: String)(implicit r: ContentRepository): Try[ContentSession] =
+    login(new SimpleCredentials(user, password.toCharArray()))(r)
+
+  def asGuest(implicit r: ContentRepository): Try[ContentSession] = login(new GuestCredentials())(r)
+
+  def login(c: Credentials)(implicit r: ContentRepository): Try[ContentSession] = {
     try {
-      return m(root);
-    } finally {
-      s.close
+      Success(r.login(c, null))
+    } catch {
+      case e: Throwable => Failure(e)
     }
   }
-
-  // ----------------------------------------------------
-  // OAK SESSION
-  // ----------------------------------------------------
-
-  def guestSession(r: ContentRepository): ContentSession =
-    r.login(new GuestCredentials(), null);
-
-  def guestSession(repository: Option[ContentRepository]): Option[ContentSession] =
-    repository match {
-      case Some(r) ⇒ Some(guestSession(r));
-      case None ⇒ None;
-    }
-
-  def isReadOnly(session: Option[ContentSession]): Boolean =
-    session match {
-      case Some(s) if (s.getAuthInfo().getUserID() != null && !"anonymous".equals(s.getAuthInfo().getUserID())) ⇒ return false;
-      case _ ⇒ true;
-    }
 
 }
