@@ -3,11 +3,12 @@ package com.pfalabs.soak
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore
 import org.apache.jackrabbit.oak.spi.security.OpenSecurityProvider
+import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
-import Sessions._
-import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+
+import Sessions.runAsAdmin
 
 @RunWith(classOf[JUnitRunner])
 class SessionsSpec extends FlatSpec with Matchers {
