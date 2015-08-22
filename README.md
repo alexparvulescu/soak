@@ -1,8 +1,65 @@
-SOAK 
-=====
+SOAK - a Scala library for Oak
+==============================
 
-Soak is a Scala library for Oak.
+Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
 
+Features
+--------
+* Session Operations made simple
+* OSGi initializer
+
+Examples
+--------
+
+```scala
+  "Session ops" should "create content" in {
+    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
+    implicit val repository = oak.createContentRepository()
+
+    val o1 = runAsAdmin({ root =>
+      root.getTree("/").addChild("test")
+      root.commit()
+    })
+    assert(o1.isSuccess)
+
+    val o2 = runAsAdmin({ root =>
+      val t = root.getTree("/").getChild("test")
+      assert(t.exists())
+    })
+    assert(o2.isSuccess)
+
+    val o3 = Sessions.run("none", "")({ root =>
+      fail("not allowed here!")
+    })
+    assert(o3.isFailure)
+  }
+```
+
+
+Use it
+------
+
+```xml
+<dependency>
+  <groupId>com.pfalabs</groupId>
+  <artifactId>com.pfalabs.soak_2.11</artifactId>
+  <version>0.0.3</version>
+</dependency>
+```
+
+The releases are published on [bintray](https://bintray.com/alexparvulescu/pfalabs/soak/view), so make sure you add the repository to the ```pom.xml``` file
+
+```xml
+<repository>
+  <id>bintray-alexparvulescu-pfalabs</id>
+  <name>bintray</name>
+  <layout>default</layout>
+  <url>http://dl.bintray.com/alexparvulescu/pfalabs</url>
+  <snapshots>
+    <enabled>false</enabled>
+  </snapshots>
+</repository>
+```
 
 License
 -------
