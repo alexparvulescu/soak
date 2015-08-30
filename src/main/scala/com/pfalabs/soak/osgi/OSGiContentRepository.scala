@@ -1,13 +1,12 @@
 package com.pfalabs.soak.osgi
 
 import java.io.Closeable
-
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.api.ContentSession
 import org.apache.jackrabbit.oak.commons.IOUtils
-
 import javax.jcr.Credentials
+import com.pfalabs.soak.Sessions
 
 class OSGiContentRepository(r: ContentRepository) extends ContentRepository with Closeable {
 
@@ -24,9 +23,5 @@ class OSGiContentRepository(r: ContentRepository) extends ContentRepository with
 
   override def getDescriptors() = r.getDescriptors()
 
-  override def close() = {
-    if (r.isInstanceOf[Closeable]) {
-      IOUtils.closeQuietly(r.asInstanceOf[Closeable])
-    }
-  }
+  override def close() = Sessions.close(r)
 }

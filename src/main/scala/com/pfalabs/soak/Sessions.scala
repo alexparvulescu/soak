@@ -9,6 +9,8 @@ import javax.jcr.Credentials
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import java.io.Closeable
+import org.apache.commons.io.IOUtils
 
 object Sessions {
 
@@ -52,4 +54,13 @@ object Sessions {
     }
   }
 
+  // ----------------------------------------------------
+  // OAK REPOSITORY
+  // ----------------------------------------------------
+
+  def close(r: ContentRepository) = {
+    if (r.isInstanceOf[Closeable]) {
+      IOUtils.closeQuietly(r.asInstanceOf[Closeable])
+    }
+  }
 }
