@@ -1,26 +1,29 @@
 package com.pfalabs.soak.osgi
 
 import java.util.Hashtable
+
 import org.apache.felix.scr.annotations.Reference
 import org.apache.felix.scr.annotations.ReferencePolicy.STATIC
 import org.apache.felix.scr.annotations.ReferencePolicyOption.GREEDY
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.osgi.OsgiWhiteboard
-import org.apache.jackrabbit.oak.plugins.commit.{ ConflictValidatorProvider, JcrConflictHandler }
+import org.apache.jackrabbit.oak.plugins.commit.ConflictValidatorProvider
+import org.apache.jackrabbit.oak.plugins.commit.JcrConflictHandler
 import org.apache.jackrabbit.oak.plugins.itemsave.ItemSaveValidatorProvider
-import org.apache.jackrabbit.oak.plugins.name.{ NameValidatorProvider, NamespaceEditorProvider }
+import org.apache.jackrabbit.oak.plugins.name.NameValidatorProvider
+import org.apache.jackrabbit.oak.plugins.name.NamespaceEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.TypeEditorProvider
 import org.apache.jackrabbit.oak.plugins.nodetype.write.InitialContent
 import org.apache.jackrabbit.oak.plugins.version.VersionEditorProvider
 import org.apache.jackrabbit.oak.spi.commit.EditorHook
 import org.apache.jackrabbit.oak.spi.security.SecurityProvider
 import org.apache.jackrabbit.oak.spi.state.NodeStore
-import org.apache.jackrabbit.oak.spi.whiteboard.{ Whiteboard, WhiteboardIndexEditorProvider, WhiteboardIndexProvider }
+import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard
+import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexEditorProvider
+import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexProvider
 import org.osgi.framework.ServiceRegistration
 import org.osgi.service.component.ComponentContext
-import java.io.Closeable
-import org.apache.commons.io.IOUtils
 
 trait OakService {
 
