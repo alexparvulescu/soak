@@ -3,6 +3,11 @@ SOAK - a Scala library for Oak
 
 Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
 
+[![Build Status](https://travis-ci.org/alexparvulescu/soak.svg?branch=master)](https://travis-ci.org/alexparvulescu/soak)
+[![Coverage Status](https://coveralls.io/repos/alexparvulescu/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexparvulescu/soak?branch=master)
+[![License](http://img.shields.io/:license-Apache%202-red.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+
 Features
 --------
 * Session Operations made simple
@@ -76,14 +81,6 @@ The releases are published on [bintray](https://bintray.com/alexparvulescu/pfala
   </snapshots>
 </repository>
 ```
-
-CI
---
-
-We use [Travis CI](http://travis-ci.org/) to verify the build: [![Build Status](https://travis-ci.org/alexparvulescu/soak.svg?branch=master)](https://travis-ci.org/alexparvulescu/soak)
-
-We use [Coveralls](https://coveralls.io/r/alexparvulescu/soak) for code coverage results: [![Coverage Status](https://coveralls.io/repos/alexparvulescu/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexparvulescu/soak?branch=master)
-
 
 License
 -------
