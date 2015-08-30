@@ -6,10 +6,10 @@ Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1
 Features
 --------
 * Session Operations made simple
-* OSGi initializer
+* OSGi support, even comes with an [OSGi initializer for the repository](https://github.com/alexparvulescu/soak/blob/master/src/main/scala/com/pfalabs/soak/osgi/OakService.scala#L28)
 
-Examples
---------
+Sessions Examples
+-----------------
 
 ```scala
   "Session ops" should "create content" in {
@@ -35,6 +35,22 @@ Examples
   }
 ```
 
+OSGi Examples
+-------------
+
+```scala
+import com.pfalabs.soak.osgi.OakService
+
+@Component(immediate = true)
+class CustomOakService extends OakService {
+
+  @Activate
+  def activate(context: ComponentContext) = doActivate(context)
+
+  @Deactivate
+  def deactivate() = doDeactivate()
+}
+```
 
 Use it
 ------
@@ -60,6 +76,14 @@ The releases are published on [bintray](https://bintray.com/alexparvulescu/pfala
   </snapshots>
 </repository>
 ```
+
+CI
+--
+
+We use [Travis CI](http://travis-ci.org/) to verify the build: [![Build Status](https://travis-ci.org/alexparvulescu/soak.svg?branch=master)](https://travis-ci.org/alexparvulescu/soak)
+
+We use [Coveralls](https://coveralls.io/r/alexparvulescu/soak) for code coverage results: [![Coverage Status](https://coveralls.io/repos/alexparvulescu/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexparvulescu/soak?branch=master)
+
 
 License
 -------
