@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pfalabs</groupId>
     <artifactId>com.pfalabs.soak_2.11</artifactId>
@@ -26,16 +27,16 @@
         <logback.version>1.0.11</logback.version>
     </properties>
     <scm>
-      <connection>scm:git:https://github.com/alexparvulescu/soak.git</connection>
-      <developerConnection>scm:git:git@github.com:alexparvulescu/soak.git</developerConnection>
-      <url>https://github.com/alexparvulescu/soak</url>
-      <tag>HEAD</tag>
+        <connection>scm:git:https://github.com/alexparvulescu/soak.git</connection>
+        <developerConnection>scm:git:git@github.com:alexparvulescu/soak.git</developerConnection>
+        <url>https://github.com/alexparvulescu/soak</url>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
-      <repository>
-        <id>bintray</id>
-        <url>https://api.bintray.com/maven/alexparvulescu/pfalabs/soak</url>
-      </repository>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/alexparvulescu/pfalabs/soak</url>
+        </repository>
     </distributionManagement>
     <dependencies>
         <!-- SCALA -->
@@ -154,7 +155,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
+                <version>3.2.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -164,6 +165,11 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <args>
+                        <arg>-unchecked</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-explaintypes</arg>
+                    </args>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
@@ -211,11 +217,11 @@
                 </executions>
             </plugin>
             <plugin>
-              <artifactId>maven-release-plugin</artifactId>
-              <version>2.4.1</version>
-              <configuration>
-                  <autoVersionSubmodules>true</autoVersionSubmodules>
-              </configuration>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
@@ -228,6 +234,27 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>scoverage-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <highlighting>true</highlighting>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.0.0</version>
+                <configuration>
+                    <coberturaReports>
+                        <coberturaReport>
+                            ${basedir}/target/cobertura.xml
+                        </coberturaReport>
+                    </coberturaReports>
+                </configuration>
             </plugin>
         </plugins>
     </build>

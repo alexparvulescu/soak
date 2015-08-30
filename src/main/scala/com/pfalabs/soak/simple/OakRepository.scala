@@ -29,7 +29,7 @@ import org.apache.jackrabbit.oak.spi.xml.{ ImportBehavior, ProtectedItemImporter
 
 import javax.security.auth.login.Configuration
 
-@deprecated("not maintained")
+@deprecated("not maintained", "0.0.3")
 trait OakRepository {
 
   var repository: Option[ContentRepository] = None;
