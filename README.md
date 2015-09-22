@@ -1,7 +1,7 @@
 SOAK - a Scala library for Oak
 ==============================
 
-*Latest release: 0.0.4 / September 22, 2015*
+![0.0.4](https://img.shields.io/badge/soak-0.0.4-blue.svg) *Latest release: 0.0.4 / September 22, 2015*
 
 Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
 
