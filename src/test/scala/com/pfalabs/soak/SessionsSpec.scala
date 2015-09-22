@@ -9,10 +9,11 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.scalatest.junit.JUnitRunner
-
 import Sessions.RepoOpF
 import Sessions.close
 import Sessions.runAsAdmin
+import Sessions.runAsGuest
+import javax.jcr.SimpleCredentials
 
 @RunWith(classOf[JUnitRunner])
 class SessionsSpec extends FlatSpec with Matchers {
@@ -37,6 +38,17 @@ class SessionsSpec extends FlatSpec with Matchers {
       fail("not allowed here!")
     })
     assert(o3.isFailure)
+
+    val o4 = Sessions.run(new SimpleCredentials("none", "".toCharArray()))({ root =>
+      fail("not allowed here!")
+    })
+    assert(o4.isFailure)
+
+    val o5 = runAsGuest({ root =>
+      val t = root.getTree("/").getChild("test")
+      assert(t.exists())
+    })
+    assert(o5.isSuccess)
 
     close(repository)
   }
@@ -82,7 +94,6 @@ class SessionsSpec extends FlatSpec with Matchers {
     })
     assert(o3.isSuccess)
 
-    // println(runAsAdmin(Trees.mkString).get)
     close(repository)
   }
 }

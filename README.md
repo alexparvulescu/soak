@@ -3,7 +3,7 @@ SOAK - a Scala library for Oak
 
 Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
 
-[![Oak 1.3.4](https://img.shields.io/badge/Oak-1.3.4-green.svg)](https://jackrabbit.apache.org/oak/)
+[![Oak 1.3.5](https://img.shields.io/badge/Oak-1.3.5-green.svg)](https://jackrabbit.apache.org/oak/)
 [![Build Status](https://travis-ci.org/alexparvulescu/soak.svg?branch=master)](https://travis-ci.org/alexparvulescu/soak)
 [![Coverage Status](https://coveralls.io/repos/alexparvulescu/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexparvulescu/soak?branch=master)
 [![License](http://img.shields.io/:license-Apache%202-red.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -13,6 +13,9 @@ Features
 --------
 * Session Operations made simple
 * OSGi support, even comes with an [OSGi initializer for the repository](https://github.com/alexparvulescu/soak/blob/master/src/main/scala/com/pfalabs/soak/osgi/OakService.scala#L28)
+* ```Tree``` helpers
+* ```PropertyState``` helpers
+* ```Query``` helpers (WIP)
 
 Sessions Examples
 -----------------
