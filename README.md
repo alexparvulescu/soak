@@ -1,6 +1,8 @@
 SOAK - a Scala library for Oak
 ==============================
 
+*Latest release: 0.0.4 / September 22, 2015*
+
 Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
 
 [![Oak 1.3.5](https://img.shields.io/badge/Oak-1.3.5-green.svg)](https://jackrabbit.apache.org/oak/)
@@ -11,11 +13,11 @@ Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1
 
 Features
 --------
-* Session Operations made simple
-* OSGi support, even comes with an [OSGi initializer for the repository](https://github.com/alexparvulescu/soak/blob/master/src/main/scala/com/pfalabs/soak/osgi/OakService.scala#L28)
+* ```Session``` Operations made simple
 * ```Tree``` helpers
 * ```PropertyState``` helpers
 * ```Query``` helpers (WIP)
+* ```OSGi``` support, even comes with an [OSGi initializer for the repository](https://github.com/alexparvulescu/soak/blob/master/src/main/scala/com/pfalabs/soak/osgi/OakService.scala#L28)
 
 Sessions Examples
 -----------------
@@ -68,7 +70,7 @@ Use it
 <dependency>
   <groupId>com.pfalabs</groupId>
   <artifactId>com.pfalabs.soak_2.11</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
 </dependency>
 ```
 
@@ -89,6 +91,7 @@ The releases are published on [bintray](https://bintray.com/alexparvulescu/pfala
 License
 -------
 
+```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this work except in compliance with the License.
 You may obtain a copy of the License in the LICENSE file, or at:
@@ -100,3 +103,4 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+```
