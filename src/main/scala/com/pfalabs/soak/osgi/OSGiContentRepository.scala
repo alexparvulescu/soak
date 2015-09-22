@@ -1,12 +1,14 @@
 package com.pfalabs.soak.osgi
 
 import java.io.Closeable
+
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.api.ContentSession
-import org.apache.jackrabbit.oak.commons.IOUtils
-import javax.jcr.Credentials
+
 import com.pfalabs.soak.Sessions
+
+import javax.jcr.Credentials
 
 class OSGiContentRepository(r: ContentRepository) extends ContentRepository with Closeable {
 
