@@ -74,14 +74,14 @@ Use it
 </dependency>
 ```
 
-The releases are published on [bintray](https://bintray.com/alexparvulescu/pfalabs/soak/view), so make sure you add the repository to the ```pom.xml``` file
+The releases are published on [bintray](https://bintray.com/pfalabs/maven/soak/view), so make sure you add the repository to the ```pom.xml``` file
 
 ```xml
 <repository>
-  <id>bintray-alexparvulescu-pfalabs</id>
+  <id>bintray-pfalabs-maven</id>
   <name>bintray</name>
   <layout>default</layout>
-  <url>http://dl.bintray.com/alexparvulescu/pfalabs</url>
+  <url>http://dl.bintray.com/pfalabs/maven</url>
   <snapshots>
     <enabled>false</enabled>
   </snapshots>
