@@ -26,9 +26,9 @@
         <logback.version>1.0.11</logback.version>
     </properties>
     <scm>
-        <connection>scm:git:https://github.com/alexparvulescu/soak.git</connection>
-        <developerConnection>scm:git:git@github.com:alexparvulescu/soak.git</developerConnection>
-        <url>https://github.com/alexparvulescu/soak</url>
+        <connection>scm:git:https://github.com/stillalex/soak.git</connection>
+        <developerConnection>scm:git:git@github.com:stillalex/soak.git</developerConnection>
+        <url>https://github.com/stillalex/soak</url>
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>
