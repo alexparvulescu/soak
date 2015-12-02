@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pfalabs</groupId>
     <artifactId>com.pfalabs.soak_2.11</artifactId>
@@ -88,26 +89,18 @@
         <!-- OSGi -->
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>4.1.0</version>
-            <scope>provided</scope>
+            <artifactId>osgi.cmpn</artifactId>
+            <version>6.0.0</version>
             <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>4.3.0</version>
-            <scope>provided</scope>
+            <artifactId>org.osgi.core</artifactId>
+            <version>5.0.0</version>
             <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.scr.annotations</artifactId>
-            <version>1.9.6</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
 
         <!-- LOGGING -->

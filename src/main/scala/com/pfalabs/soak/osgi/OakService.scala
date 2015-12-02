@@ -1,10 +1,9 @@
 package com.pfalabs.soak.osgi
 
 import java.util.Hashtable
+
 import scala.collection.JavaConversions.asScalaBuffer
-import org.apache.felix.scr.annotations.Reference
-import org.apache.felix.scr.annotations.ReferencePolicy.STATIC
-import org.apache.felix.scr.annotations.ReferencePolicyOption.GREEDY
+
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
 import org.apache.jackrabbit.oak.osgi.OsgiWhiteboard
@@ -13,23 +12,16 @@ import org.apache.jackrabbit.oak.plugins.nodetype.write.InitialContent
 import org.apache.jackrabbit.oak.spi.lifecycle.RepositoryInitializer
 import org.apache.jackrabbit.oak.spi.security.SecurityProvider
 import org.apache.jackrabbit.oak.spi.state.NodeStore
-import org.apache.jackrabbit.oak.spi.whiteboard.Tracker
-import org.apache.jackrabbit.oak.spi.whiteboard.Whiteboard
-import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardEditorProvider
-import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexEditorProvider
-import org.apache.jackrabbit.oak.spi.whiteboard.WhiteboardIndexProvider
+import org.apache.jackrabbit.oak.spi.whiteboard.{ Tracker, Whiteboard, WhiteboardEditorProvider, WhiteboardIndexEditorProvider, WhiteboardIndexProvider }
 import org.osgi.framework.ServiceRegistration
 import org.osgi.service.component.ComponentContext
-import org.apache.jackrabbit.oak.plugins.index.IndexEditorProvider
-import org.apache.felix.scr.annotations.ReferenceStrategy
+import org.osgi.service.component.annotations.Reference
 
 trait OakService {
 
-  @Reference
   var store: NodeStore = null
 
-  @Reference
-  val securityProvider: SecurityProvider = null
+  var securityProvider: SecurityProvider = null
 
   // TODO enable this as soon as Oak 1.3.6 is out
   // /**
@@ -48,7 +40,7 @@ trait OakService {
 
   var initializers: Option[Tracker[RepositoryInitializer]] = None
 
-  var repositoryServiceReference: Option[(ServiceRegistration, OSGiContentRepository)] = None
+  var repositoryServiceReference: Option[(ServiceRegistration[_], OSGiContentRepository)] = None
 
   def doActivate(context: ComponentContext) {
     val whiteboard = new OsgiWhiteboard(context.getBundleContext())
@@ -58,18 +50,18 @@ trait OakService {
     indexEditorProvider.start(whiteboard)
     val repository = new OSGiContentRepository(this.createRepository(whiteboard))
     val registration = context.getBundleContext().registerService(classOf[ContentRepository].getName(), repository, new Hashtable[String, Object]())
-    repositoryServiceReference = Some(registration, repository)
+    repositoryServiceReference = Some((registration, repository))
   }
 
   def doDeactivate() {
-    initializers.foreach(ri => { ri.stop })
+    initializers.foreach(ri ⇒ { ri.stop })
     initializers = None
 
     editorProvider.stop()
     indexProvider.stop()
     indexEditorProvider.stop()
 
-    repositoryServiceReference.foreach(r => {
+    repositoryServiceReference.foreach(r ⇒ {
       r._1.unregister()
       r._2.close()
     })
@@ -93,6 +85,24 @@ trait OakService {
     initializers.map { _.getServices.foreach(oak.`with`(_)) }
 
     oak.createContentRepository()
+  }
+
+  @Reference
+  def setNodeStore(s: NodeStore) {
+    store = s
+  }
+
+  def unsetNodeStore(s: NodeStore) {
+    store = null
+  }
+
+  @Reference
+  def setSecurityProvider(s: SecurityProvider) {
+    securityProvider = s
+  }
+
+  def unsetSecurityProvider(s: SecurityProvider) {
+    securityProvider = null
   }
 
 }
