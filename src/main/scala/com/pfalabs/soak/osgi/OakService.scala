@@ -19,7 +19,7 @@ import org.osgi.service.component.annotations.Reference
 
 trait OakService {
 
-  var store: NodeStore = null
+  var nodeStore: NodeStore = null
 
   var securityProvider: SecurityProvider = null
 
@@ -72,7 +72,7 @@ trait OakService {
 
   def createRepository(whiteboard: Whiteboard) = {
 
-    val oak = new Oak(store)
+    val oak = new Oak(nodeStore)
       .`with`(whiteboard)
       .`with`(new InitialContent())
       .`with`(JcrConflictHandler.createJcrConflictHandler)
@@ -87,16 +87,16 @@ trait OakService {
     oak.createContentRepository()
   }
 
-  @Reference
+  @Reference(name = "nodeStore")
   def setNodeStore(s: NodeStore) {
-    store = s
+    nodeStore = s
   }
 
   def unsetNodeStore(s: NodeStore) {
-    store = null
+    nodeStore = null
   }
 
-  @Reference
+  @Reference(name = "securityProvider")
   def setSecurityProvider(s: SecurityProvider) {
     securityProvider = s
   }
