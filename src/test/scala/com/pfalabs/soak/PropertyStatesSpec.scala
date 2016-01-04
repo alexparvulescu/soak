@@ -1,28 +1,20 @@
 package com.pfalabs.soak
 
-import scala.util.Failure
-import scala.util.Success
+import scala.collection.JavaConversions.asJavaIterable
+import scala.util.{ Failure, Success }
 
 import org.apache.jackrabbit.oak.Oak
-import org.apache.jackrabbit.oak.api.Root
-import org.apache.jackrabbit.oak.api.Type
+import org.apache.jackrabbit.oak.api.{ Root, Type }
 import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore
 import org.apache.jackrabbit.oak.spi.security.OpenSecurityProvider
 import org.junit.runner.RunWith
-import org.scalatest.Finders
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.scalatest.{ Finders, FlatSpec, Matchers }
 import org.scalatest.junit.JUnitRunner
 
 import com.pfalabs.soak.Sessions.RepoOpF
 
-import PropertyStates.asB
-import PropertyStates.asI
-import PropertyStates.asL
-import PropertyStates.asS
-import Sessions.RepoOpF
-import Sessions.close
-import Sessions.runAsAdmin
+import PropertyStates.{ asB, asI, asIs, asL, asLs, asS, asSs }
+import Sessions.{ RepoOpF, close, runAsAdmin }
 
 @RunWith(classOf[JUnitRunner])
 class PropertyStatesSpec extends FlatSpec with Matchers {
@@ -68,6 +60,18 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
+
+      runAsAdmin(r => asS(r.getTree("/test/tEmpty"), "choice", "defaultVal")) match {
+        case Success(v)  => assert(v == "defaultVal")
+        case Failure(ex) => fail(ex.getMessage)
+      }
+
+      runAsAdmin(r => asSs(r.getTree("/test/tStrings"), "choice")) match {
+        case Success(Some(v)) => assert(v.toList == List("a", "b", "c"))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
     } finally {
       close(repository)
     }
@@ -106,6 +110,12 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
       runAsAdmin(ops("tBoolean")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(r => asLs(r.getTree("/test/tNumerics"), "choice")) match {
+        case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
+        case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
@@ -148,6 +158,12 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
       runAsAdmin(ops("tBoolean")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(r => asIs(r.getTree("/test/tNumerics"), "choice")) match {
+        case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
+        case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
@@ -202,6 +218,15 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
     val l: java.lang.Long = Int.MaxValue + 10l
     val t5 = t.addChild("tNumericLarge")
     t5.setProperty("choice", l, Type.LONG)
+
+    val t11 = t.addChild("tStrings")
+    // specifically call the conversion method, otherwise things get confusing
+    t11.setProperty("choice", asJavaIterable(List("a", "b", "c")), Type.STRINGS)
+
+    val t12 = t.addChild("tNumerics")
+    // specifically call the conversion method, otherwise things get confusing
+    val p12: java.lang.Iterable[java.lang.Long] = asJavaIterable(List(1, 2, 3))
+    t12.setProperty("choice", p12, Type.LONGS)
 
     root.commit()
     root

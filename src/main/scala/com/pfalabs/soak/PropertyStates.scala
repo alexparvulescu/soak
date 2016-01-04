@@ -2,14 +2,8 @@ package com.pfalabs.soak
 
 import scala.collection.JavaConversions.iterableAsScalaIterable
 
-import org.apache.jackrabbit.oak.api.PropertyState
-import org.apache.jackrabbit.oak.api.Tree
-import org.apache.jackrabbit.oak.api.Type
-import org.apache.jackrabbit.oak.api.Type.BOOLEAN
-import org.apache.jackrabbit.oak.api.Type.LONG
-import org.apache.jackrabbit.oak.api.Type.LONGS
-import org.apache.jackrabbit.oak.api.Type.STRING
-import org.apache.jackrabbit.oak.api.Type.STRINGS
+import org.apache.jackrabbit.oak.api.{ PropertyState, Tree, Type }
+import org.apache.jackrabbit.oak.api.Type.{ BOOLEAN, LONG, LONGS, STRING, STRINGS }
 
 object PropertyStates {
 
@@ -24,10 +18,10 @@ object PropertyStates {
   def asS(t: Tree, name: String, default: String): String =
     Option(t.getProperty(name)).flatMap { p => asType(p, STRING) }.getOrElse(default)
 
-  def asSs(t: Tree, name: String): Option[Seq[String]] =
+  def asSs(t: Tree, name: String): Option[Iterable[String]] =
     Option(t.getProperty(name))
       .flatMap { p => asType(p, STRINGS) }
-      .map { x => x.toSeq }
+      .map { x => iterableAsScalaIterable(x) }
 
   /**
    * @param t tree
@@ -37,10 +31,10 @@ object PropertyStates {
   def asL(t: Tree, name: String): Option[Long] =
     Option(t.getProperty(name)).flatMap { p => asType(p, LONG) }.map { l => l }
 
-  def asLs(t: Tree, name: String): Option[Seq[Long]] =
+  def asLs(t: Tree, name: String): Option[Iterable[Long]] =
     Option(t.getProperty(name))
       .flatMap { p => asType(p, LONGS) }
-      .map { x => x.map(_.asInstanceOf[Long]).toSeq }
+      .map { x => x.map(_.asInstanceOf[Long]) }
 
   /**
    * @param t tree
@@ -50,7 +44,7 @@ object PropertyStates {
   def asI(t: Tree, name: String): Option[Int] =
     asL(t, name).filter { l => l <= Int.MaxValue }.map { l => l.intValue() }
 
-  def asIs(t: Tree, name: String): Option[Seq[Int]] =
+  def asIs(t: Tree, name: String): Option[Iterable[Int]] =
     asLs(t, name)
       .map { x => x.filter { l => l <= Int.MaxValue }.map { l => l.intValue() } }
 
@@ -66,6 +60,7 @@ object PropertyStates {
     try {
       t match {
         case STRING  => Some(ps.getValue(t))
+        case STRINGS => Some(ps.getValue(t))
         case LONG    => Some(ps.getValue(t))
         case LONGS   => Some(ps.getValue(t))
         case BOOLEAN => Some(ps.getValue(t))
