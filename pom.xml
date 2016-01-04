@@ -176,9 +176,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>!org.apache.felix.scr.annotations.*,!org.apache.jackrabbit.oak.plugins.segment.file.*,*</Import-Package>
-                        <Embed-Dependency>*;scope=compile|runtime</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
+                        <Private-Package>com.pfalabs.soak.simple.*</Private-Package>
                     </instructions>
                 </configuration>
             </plugin>
