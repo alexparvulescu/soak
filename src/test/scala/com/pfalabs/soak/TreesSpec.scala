@@ -9,21 +9,17 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 import org.scalatest.junit.JUnitRunner
-
 import PropertyStates.asL
 import PropertyStates.asS
-
-import Trees.getChildren
+import Trees.RootOps._
+import Trees.TreeOps._
 import Trees.typeOakUnstructured
-import Trees.getOrCreate
-import Trees.TreeOpsFilter
-
 import Sessions.RepoOpF
 import Sessions.runAsAdmin
 import Sessions.close
-
 import org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE
 import org.apache.jackrabbit.oak.plugins.nodetype.NodeTypeConstants.NT_OAK_UNSTRUCTURED
+import org.apache.jackrabbit.oak.api.ContentRepository
 
 @RunWith(classOf[JUnitRunner])
 class TreesSpec extends FlatSpec with Matchers {
@@ -31,17 +27,16 @@ class TreesSpec extends FlatSpec with Matchers {
   case class Item(name: String, choice: Option[String])
 
   "Tree ops" should "get children" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getAllChildren(root: Root) = getChildren(root.getTree("/test"), treeToItem)
+    def getAllAsItem(root: Root): Iterable[Item] = (root > "/test") /:/ treeToItem
 
-    val ops: RepoOpF[List[Item]] = createTestContent _ andThen getAllChildren _
+    def treeToItem(t: Tree): Item = Item(t.getName, asS(t, "choice"))
 
     try {
-      val o = runAsAdmin(ops)
+      val o = runAsAdmin(getAllAsItem)
       assert(o.isSuccess)
-      val l = o.get
+      val l = o.get.toList
       assert(l.length == 3)
       assert(l contains Item("t1", Some("yes")))
       assert(l contains Item("t2", Some("no")))
@@ -52,23 +47,18 @@ class TreesSpec extends FlatSpec with Matchers {
   }
 
   it should "get filtered children" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getFilteredChildren(root: Root) = getChildren(root.getTree("/test"), treeToItem, filterByChoice)
+    def getFilteredAsItem(root: Root): Iterable[Item] = (root > "/test") /:/ (filterByChoice, treeToItem)
 
     def filterByChoice(t: Tree) = asS(t, "choice").getOrElse("").equals("yes")
 
-    def getFilteredChildrenTest(root: Root) = {
-      val t = root.getTree("/test")
-      getChildren(t, treeToItem, filterByChoice)
-    }
+    def treeToItem(t: Tree): Item = Item(t.getName, asS(t, "choice"))
 
-    val ops: RepoOpF[List[Item]] = createTestContent _ andThen getFilteredChildren _
     try {
-      val o = runAsAdmin(ops)
+      val o = runAsAdmin(getFilteredAsItem)
       assert(o.isSuccess)
-      val l = o.get
+      val l = o.get.toList
       assert(l.length == 1)
       assert(l contains Item("t1", Some("yes")))
     } finally {
@@ -77,26 +67,25 @@ class TreesSpec extends FlatSpec with Matchers {
   }
 
   it should "get or create child" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
     def init(t: Tree) = {
       typeOakUnstructured(t)
-      t.setProperty("count", 0)
+      t |+ ("count", 0)
     }
 
     try {
-
       val oI = runAsAdmin(root => {
-        getOrCreate(root.getTree("/"), "testGOCC", init)
-        assert(root.hasPendingChanges())
-        root.commit()
+        (root /) /! ("testGOCC", init)
+        assert(root.?*)
+        root.|+>
+        (root /) /! ("testGOCC", init)
+        assert(!root.?*)
       })
       assert(oI.isSuccess)
 
       runAsAdmin(root => {
-        val t = getOrCreate(root.getTree("/"), "testGOCC", init)
-        assert(!root.hasPendingChanges())
+        val t = root > "/testGOCC"
         assert(asS(t, JCR_PRIMARYTYPE).getOrElse("") == NT_OAK_UNSTRUCTURED)
         assert(asL(t, "count").getOrElse(-1) == 0)
       })
@@ -106,17 +95,23 @@ class TreesSpec extends FlatSpec with Matchers {
     }
   }
 
-  def createTestContent(root: Root): Root = {
-    val t = root.getTree("/").addChild("test")
-    val t1 = t.addChild("t1")
-    t1.setProperty("choice", "yes")
-    val t2 = t.addChild("t2")
-    t2.setProperty("choice", "no")
-    val t3 = t.addChild("t3")
-    root.commit()
-    root
+  def newTestRepository(): ContentRepository = {
+    val repo = new Oak(new MemoryNodeStore())
+      .`with`(new OpenSecurityProvider())
+      .createContentRepository()
+    runAsAdmin(createTestContent _)(repo)
+    repo
   }
 
-  def treeToItem(t: Tree): Item = Item(t.getName, asS(t, "choice"))
+  def createTestContent(root: Root): Root = {
+    val t = (root /) + "test"
+    val t1 = t + "t1"
+    t1 |+ ("choice", "yes")
+    val t2 = t + "t2"
+    t2 |+ ("choice", "no")
+    t + "t3"
+    root.|+>
+    root
+  }
 
 }

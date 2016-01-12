@@ -4,69 +4,76 @@ import scala.collection.JavaConversions.asJavaIterable
 import scala.util.{ Failure, Success }
 
 import org.apache.jackrabbit.oak.Oak
-import org.apache.jackrabbit.oak.api.{ Root, Type }
+import org.apache.jackrabbit.oak.api.{ ContentRepository, Root, Type }
 import org.apache.jackrabbit.oak.plugins.memory.MemoryNodeStore
 import org.apache.jackrabbit.oak.spi.security.OpenSecurityProvider
 import org.junit.runner.RunWith
 import org.scalatest.{ Finders, FlatSpec, Matchers }
 import org.scalatest.junit.JUnitRunner
 
-import com.pfalabs.soak.Sessions.RepoOpF
-
-import PropertyStates.{ asB, asI, asIs, asL, asLs, asS, asSs }
-import Sessions.{ RepoOpF, close, runAsAdmin }
+import PropertyStates.{ asB, asBs, asI, asIs, asL, asLs, asS, asSs }
+import Sessions.{ close, runAsAdmin }
+import Trees.RootOps.toRootOps
+import Trees.TreeOps.toTreeOps
 
 @RunWith(classOf[JUnitRunner])
 class PropertyStatesSpec extends FlatSpec with Matchers {
 
   "Property ops" should "get string value" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getString(n: String)(root: Root) = asS(root.getTree("/test/" + n), "choice")
+    def getString(n: String)(root: Root): Option[String] =
+      asS(root > "/test/" + n | "choice")
 
-    def ops(n: String): RepoOpF[Option[String]] = createTestContent _ andThen getString(n) _
+    def getStrings(n: String)(root: Root): Option[Iterable[String]] =
+      asSs(root > "/test/" + n | "choice")
 
     try {
-      runAsAdmin(ops("tString")) match {
+      runAsAdmin(getString("tString")) match {
         case Success(Some(v)) => assert(v == "yes")
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // transparent Numeric to String conversion
-      runAsAdmin(ops("tNumeric")) match {
+      runAsAdmin(getString("tNumeric")) match {
         case Success(Some(v)) => assert(v == "0")
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // transparent Large Numeric to String conversion
-      runAsAdmin(ops("tNumericLarge")) match {
+      runAsAdmin(getString("tNumericLarge")) match {
         case Success(Some(v)) => assert(v == "2147483657")
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // transparent Boolean to String conversion
-      runAsAdmin(ops("tBoolean")) match {
+      runAsAdmin(getString("tBoolean")) match {
         case Success(Some(v)) => assert(v == "true")
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tEmpty")) match {
+      runAsAdmin(getString("tEmpty")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(r => asS(r.getTree("/test/tEmpty"), "choice", "defaultVal")) match {
+      runAsAdmin(r => asS(r > "/test/tEmpty" | "choice", "defaultVal")) match {
         case Success(v)  => assert(v == "defaultVal")
         case Failure(ex) => fail(ex.getMessage)
       }
 
-      runAsAdmin(r => asSs(r.getTree("/test/tStrings"), "choice")) match {
+      runAsAdmin(getStrings("tStrings")) match {
+        case Success(Some(v)) => assert(v.toList == List("a", "b", "c"))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getStrings("tStringsImpl")) match {
         case Success(Some(v)) => assert(v.toList == List("a", "b", "c"))
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
@@ -78,42 +85,49 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
   }
 
   it should "get long value" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getLong(n: String)(root: Root) = asL(root.getTree("/test/" + n), "choice")
+    def getLong(n: String)(root: Root): Option[Long] =
+      asL(root > "/test/" + n | "choice")
 
-    def ops(n: String): RepoOpF[Option[Long]] = createTestContent _ andThen getLong(n) _
+    def getLongs(n: String)(root: Root): Option[Iterable[Long]] =
+      asLs(root > "/test/" + n | "choice")
 
     try {
 
       // string->long conversion fails
-      runAsAdmin(ops("tString")) match {
+      runAsAdmin(getLong("tString")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tNumeric")) match {
+      runAsAdmin(getLong("tNumeric")) match {
         case Success(Some(v)) => assert(v == 0)
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tNumericLarge")) match {
+      runAsAdmin(getLong("tNumericLarge")) match {
         case Success(Some(v)) => assert(v == 2147483657l)
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // boolean->long conversion fails
-      runAsAdmin(ops("tBoolean")) match {
+      runAsAdmin(getLong("tBoolean")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(r => asLs(r.getTree("/test/tNumerics"), "choice")) match {
+      runAsAdmin(getLongs("tNumerics")) match {
+        case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getLongs("tNumericsImpl")) match {
         case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
@@ -125,43 +139,56 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
   }
 
   it should "get int value" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getInt(n: String)(root: Root) = asI(root.getTree("/test/" + n), "choice")
+    def getInt(n: String)(root: Root): Option[Int] =
+      asI(root > "/test/" + n | "choice")
 
-    def ops(n: String): RepoOpF[Option[Int]] = createTestContent _ andThen getInt(n) _
+    def getInts(n: String)(root: Root): Option[Iterable[Int]] =
+      asIs(root > "/test/" + n | "choice")
 
     try {
 
       // string->int conversion fails
-      runAsAdmin(ops("tString")) match {
+      runAsAdmin(getInt("tString")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tNumeric")) match {
+      runAsAdmin(getInt("tNumeric")) match {
         case Success(Some(v)) => assert(v == 0)
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // integer overflow
-      runAsAdmin(ops("tNumericLarge")) match {
+      runAsAdmin(getInt("tNumericLarge")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
       // boolean->int conversion fails
-      runAsAdmin(ops("tBoolean")) match {
+      runAsAdmin(getInt("tBoolean")) match {
         case Success(Some(v)) => fail(s"unexpected value $v")
         case Success(None)    => // expected
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(r => asIs(r.getTree("/test/tNumerics"), "choice")) match {
+      runAsAdmin(getInts("tNumerics")) match {
+        case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getInts("tNumericsImpl")) match {
+        case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getInts("tNumericsIntImpl")) match {
         case Success(Some(v)) => assert(v.toList == List(1, 2, 3))
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
@@ -173,29 +200,42 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
   }
 
   it should "get boolean value" in {
-    val oak = new Oak(new MemoryNodeStore()).`with`(new OpenSecurityProvider())
-    implicit val repository = oak.createContentRepository()
+    implicit val repository = newTestRepository
 
-    def getBoolean(n: String)(root: Root) = asB(root.getTree("/test/" + n), "choice")
+    def getBoolean(n: String)(root: Root): Option[Boolean] =
+      asB(root > "/test/" + n | "choice")
 
-    def ops(n: String): RepoOpF[Option[Boolean]] = createTestContent _ andThen getBoolean(n) _
+    def getBooleans(n: String)(root: Root): Option[Iterable[Boolean]] =
+      asBs(root > "/test/" + n | "choice")
 
     try {
 
-      runAsAdmin(ops("tString")) match {
+      runAsAdmin(getBoolean("tString")) match {
         case Success(Some(v)) => assert(!v)
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tNumeric")) match {
+      runAsAdmin(getBoolean("tNumeric")) match {
         case Success(Some(v)) => assert(!v)
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
 
-      runAsAdmin(ops("tBoolean")) match {
+      runAsAdmin(getBoolean("tBoolean")) match {
         case Success(Some(v)) => assert(v)
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getBooleans("tBooleans")) match {
+        case Success(Some(v)) => assert(v.toList == List(true, false))
+        case Success(None)    => fail("get property failed")
+        case Failure(ex)      => fail(ex.getMessage)
+      }
+
+      runAsAdmin(getBooleans("tBooleansImpl")) match {
+        case Success(Some(v)) => assert(v.toList == List(true, false))
         case Success(None)    => fail("get property failed")
         case Failure(ex)      => fail(ex.getMessage)
       }
@@ -206,19 +246,20 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
   }
 
   def createTestContent(root: Root): Root = {
-    val t = root.getTree("/").addChild("test")
-    val t1 = t.addChild("tString")
-    t1.setProperty("choice", "yes")
-    val t2 = t.addChild("tNumeric")
-    t2.setProperty("choice", 0)
-    val t3 = t.addChild("tBoolean")
-    t3.setProperty("choice", true)
-    val t4 = t.addChild("tEmpty")
+    val t = (root /) + "test"
+    val t1 = t + "tString"
+    t1 |+ ("choice", "yes")
+    val t2 = t + "tNumeric"
+    t2 |+ ("choice", 0)
+    val t3 = t + "tBoolean"
+    t3 |+ ("choice", true)
+    val t4 = t + "tEmpty"
 
     val l: java.lang.Long = Int.MaxValue + 10l
-    val t5 = t.addChild("tNumericLarge")
-    t5.setProperty("choice", l, Type.LONG)
+    val t5 = t + "tNumericLarge"
+    t5 |+ ("choice", l, Type.LONG)
 
+    // lists no implicits
     val t11 = t.addChild("tStrings")
     // specifically call the conversion method, otherwise things get confusing
     t11.setProperty("choice", asJavaIterable(List("a", "b", "c")), Type.STRINGS)
@@ -228,8 +269,26 @@ class PropertyStatesSpec extends FlatSpec with Matchers {
     val p12: java.lang.Iterable[java.lang.Long] = asJavaIterable(List(1, 2, 3))
     t12.setProperty("choice", p12, Type.LONGS)
 
-    root.commit()
+    val t13 = t.addChild("tBooleans")
+    // specifically call the conversion method, otherwise things get confusing
+    val p13: java.lang.Iterable[java.lang.Boolean] = asJavaIterable(List(true, false))
+    t13.setProperty("choice", p13, Type.BOOLEANS)
+
+    // lists with implicits
+    (t + "tStringsImpl") |+ ("choice", List("a", "b", "c"))
+    (t + "tNumericsImpl") |+ ("choice", List(1l, 2, 3))
+    (t + "tNumericsIntImpl") |+ ("choice", List(1, 2, 3))
+    (t + "tBooleansImpl") |+ ("choice", List(true, false))
+
+    root.|+>
     root
   }
 
+  def newTestRepository(): ContentRepository = {
+    val repo = new Oak(new MemoryNodeStore())
+      .`with`(new OpenSecurityProvider())
+      .createContentRepository()
+    runAsAdmin(createTestContent _)(repo)
+    repo
+  }
 }

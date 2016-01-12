@@ -1,13 +1,14 @@
 package com.pfalabs.soak
 
-import scala.collection.JavaConversions.iterableAsScalaIterable
-import scala.util.Properties
+import scala.collection.convert.wrapAll.iterableAsScalaIterable
+import scala.util.Properties.lineSeparator
 
 import org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE
-import org.apache.jackrabbit.oak.api.Root
-import org.apache.jackrabbit.oak.api.Tree
+import org.apache.jackrabbit.oak.api.{ PropertyState, Root, Tree, Type }
 import org.apache.jackrabbit.oak.api.Type.NAME
 import org.apache.jackrabbit.oak.plugins.nodetype.NodeTypeConstants.NT_OAK_UNSTRUCTURED
+
+import com.pfalabs.soak.PropertyStates.TypeOps.STypeIterable
 
 object Trees {
 
@@ -33,7 +34,7 @@ object Trees {
     }
     t.getChildren.foreach { tc =>
       {
-        node.append(Properties.lineSeparator)
+        node.append(lineSeparator)
         node.append(mkString(tc, level + 1, prepend + prepend,
           tc.getName()));
       }
@@ -42,23 +43,75 @@ object Trees {
   }
 
   // ----------------------------------------------------
-  // Children Ops
+  // Trees
   // ----------------------------------------------------
 
-  type TreeOps[U] = (Tree) => U
+  class TreeOps(val t: Tree) extends AnyVal {
 
-  type TreeOpsFilter = TreeOps[Boolean]
+    def get: Tree = t
 
-  private def includeAll: TreeOpsFilter = (x: Tree) => true
+    def name = t.getName()
+    def ?? = t.exists()
 
-  def getChildren[U](t: Tree, m: TreeOps[U], f: TreeOpsFilter = includeAll): List[U] = {
+    def /(n: String): Tree = t.getChild(n)
+    def /!(n: String): Tree = getOrCreate(t, n)
+    def /!(n: String, init: Tree => Unit): Tree = getOrCreate(t, n, init)
+
+    def /?(n: String): Boolean = t.hasChild(n)
+    def +(n: String): Tree = t.addChild(n)
+
+    def /:/ : Iterable[Tree] = t.getChildren
+    def /:/[U](m: Tree => U): Iterable[U] = getChildren(t, m)
+    def /:/[U](f: Tree => Boolean, m: Tree => U): Iterable[U] = getChildren(t, f, m)
+
+    def |(p: String): PropertyState = t.getProperty(p)
+    def |?(p: String): Boolean = t.hasProperty(p)
+    def |-(p: String) = t.removeProperty(p)
+
+    def |:| : Iterable[PropertyState] = t.getProperties
+
+    def |+[U](p: String, v: U): TreeOps = {
+      t.setProperty(p, v)
+      this
+    }
+
+    def |+[U](p: String, v: U, ty: Type[U]): TreeOps = {
+      t.setProperty(p, v, ty)
+      this
+    }
+
+    def |+[U, V](p: String, l: Iterable[U])(implicit ty: STypeIterable[U, V]): TreeOps =
+      {
+        t.setProperty(p, ty.convertValue(l), ty.convertType())
+        this
+      }
+  }
+
+  object TreeOps {
+
+    def apply(t: Tree) = new TreeOps(t)
+
+    implicit def toTreeOps(t: Tree) = TreeOps(t)
+
+  }
+
+  def getChildren[U](t: Tree, m: Tree => U): Iterable[U] =
+    t.getChildren()
+      .map(m)
+
+  def getChildren[U](t: Tree, f: Tree => Boolean, m: Tree => U): Iterable[U] =
     t.getChildren()
       .filter(f)
       .map(m)
-      .toList
-  }
 
-  def getOrCreate(t: Tree, name: String, init: TreeOps[Unit]) =
+  def getOrCreate(t: Tree, name: String) =
+    if (t.hasChild(name)) {
+      t.getChild(name)
+    } else {
+      t.addChild(name)
+    }
+
+  def getOrCreate(t: Tree, name: String, init: Tree => Unit) =
     if (t.hasChild(name)) {
       t.getChild(name)
     } else {
@@ -77,5 +130,22 @@ object Trees {
   }
 
   def typeOakUnstructured(t: Tree): Tree = setPrimaryType(t, NT_OAK_UNSTRUCTURED)
+
+  // ----------------------------------------------------
+  // Roots
+  // ----------------------------------------------------
+
+  class RootOps(val r: Root) extends AnyVal {
+    def >(p: String): Tree = r.getTree(p)
+    def / = >("/")
+
+    def ?* = r.hasPendingChanges()
+    def |+> = r.commit()
+  }
+
+  object RootOps {
+    def apply(r: Root) = new RootOps(r)
+    implicit def toRootOps(r: Root) = RootOps(r)
+  }
 
 }
