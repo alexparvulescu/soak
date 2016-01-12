@@ -24,14 +24,14 @@ import org.apache.jackrabbit.oak.api.ContentRepository
 @RunWith(classOf[JUnitRunner])
 class TreesSpec extends FlatSpec with Matchers {
 
-  case class Item(name: String, choice: Option[String])
-
   "Tree ops" should "get children" in {
     implicit val repository = newTestRepository
 
+    case class Item(name: String, choice: Option[String])
+
     def getAllAsItem(root: Root): Iterable[Item] = (root > "/test") /:/ treeToItem
 
-    def treeToItem(t: Tree): Item = Item(t.getName, asS(t, "choice"))
+    def treeToItem(t: Tree): Item = Item(t.name, asS(t | "choice"))
 
     try {
       val o = runAsAdmin(getAllAsItem)
@@ -49,11 +49,13 @@ class TreesSpec extends FlatSpec with Matchers {
   it should "get filtered children" in {
     implicit val repository = newTestRepository
 
+    case class Item(name: String, choice: Option[String])
+
     def getFilteredAsItem(root: Root): Iterable[Item] = (root > "/test") /:/ (filterByChoice, treeToItem)
 
-    def filterByChoice(t: Tree) = asS(t, "choice").getOrElse("").equals("yes")
+    def filterByChoice(t: Tree): Boolean = asS(t | "choice").getOrElse("").equals("yes")
 
-    def treeToItem(t: Tree): Item = Item(t.getName, asS(t, "choice"))
+    def treeToItem(t: Tree): Item = Item(t.name, asS(t | "choice"))
 
     try {
       val o = runAsAdmin(getFilteredAsItem)

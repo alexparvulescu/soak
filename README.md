@@ -63,6 +63,38 @@ class CustomOakService extends OakService {
 }
 ```
 
+Trees Examples
+--------------
+
+Select all child nodes of ```/test```, filter and transform them to ```Item``` instances:
+
+```scala
+
+    case class Item(name: String, choice: Option[String])
+
+    def getFilteredAsItem(root: Root): Iterable[Item] = (root > "/test") /:/ (filterByChoice, treeToItem)
+
+    def filterByChoice(t: Tree): Boolean = asS(t | "choice").getOrElse("").equals("yes")
+
+    def treeToItem(t: Tree): Item = Item(t.name, asS(t | "choice"))
+
+    val example = runAsAdmin(getFilteredAsItem)
+```
+
+Query Examples
+--------------
+
+Select all child nodes of ```/testQ``` that have ```@lang = 'en'``` and transform them to ```Item``` instances:
+
+```scala
+
+    def treeToItem(t: Tree): Item = Item(t.name, asI(t | "id").get, asS(t | "lang"))
+
+    val xpathEn = "/jcr:root/testQ/element(*, oak:Unstructured)[@lang = 'en']"
+
+    val example = val o1 = runAsAdmin(xpath(xpathEn, treeToItem))
+```
+
 Use it
 ------
 
