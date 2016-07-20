@@ -16,21 +16,21 @@ import org.apache.jackrabbit.oak.spi.whiteboard.{ Tracker, Whiteboard, Whiteboar
 import org.osgi.framework.ServiceRegistration
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.component.annotations.Reference
+import org.apache.jackrabbit.oak.plugins.index.IndexEditorProvider
 
-trait OakService {
+import org.osgi.service.component.annotations.{ Activate, Component, Deactivate }
+import org.osgi.service.component.annotations.ConfigurationPolicy
+
+@Component(immediate = true, configurationPolicy = ConfigurationPolicy.REQUIRE)
+class OakService {
 
   var nodeStore: NodeStore = null
 
   var securityProvider: SecurityProvider = null
 
-  // TODO enable this as soon as Oak 1.3.6 is out
-  // /**
-  //   * Reference needed because of OAK-3366
-  //   */
-  //  @Reference(referenceInterface = classOf[IndexEditorProvider],
-  //    target = "(type=property)",
-  //    strategy = ReferenceStrategy.LOOKUP)
-  //  val pi: IndexEditorProvider = null
+  var propertyIndex: IndexEditorProvider = null
+
+  var referenceIndex: IndexEditorProvider = null
 
   val editorProvider = new WhiteboardEditorProvider()
 
@@ -42,7 +42,8 @@ trait OakService {
 
   var repositoryServiceReference: Option[(ServiceRegistration[_], OSGiContentRepository)] = None
 
-  def doActivate(context: ComponentContext) {
+  @Activate
+  def activate(context: ComponentContext) {
     val whiteboard = new OsgiWhiteboard(context.getBundleContext())
     initializers = Some(whiteboard.track(classOf[RepositoryInitializer]))
     editorProvider.start(whiteboard)
@@ -53,7 +54,8 @@ trait OakService {
     repositoryServiceReference = Some((registration, repository))
   }
 
-  def doDeactivate() {
+  @Deactivate
+  def deactivate() {
     initializers.foreach(ri ⇒ { ri.stop })
     initializers = None
 
@@ -70,17 +72,19 @@ trait OakService {
 
   //----------------------------------------------------------------------------------------------------< private >---
 
-  def createRepository(whiteboard: Whiteboard) = {
+  def createRepository(whiteboard: Whiteboard): ContentRepository = {
 
     val oak = new Oak(nodeStore)
-      .`with`(whiteboard)
       .`with`(new InitialContent())
       .`with`(JcrConflictHandler.createJcrConflictHandler)
-
+      .`with`(whiteboard)
       .`with`(securityProvider)
       .`with`(editorProvider)
-      .`with`(indexProvider)
       .`with`(indexEditorProvider)
+      .`with`(indexProvider)
+      .withFailOnMissingIndexProvider()
+    //TODO no async indexing yet
+    //   .withAsyncIndexing()
 
     initializers.map { _.getServices.foreach(oak.`with`(_)) }
 
@@ -88,11 +92,11 @@ trait OakService {
   }
 
   @Reference(name = "nodeStore")
-  def setNodeStore(s: NodeStore) {
-    nodeStore = s
+  def setNodeStore(ns: NodeStore) {
+    nodeStore = ns
   }
 
-  def unsetNodeStore(s: NodeStore) {
+  def unsetNodeStore(ns: NodeStore) {
     nodeStore = null
   }
 
@@ -105,4 +109,21 @@ trait OakService {
     securityProvider = null
   }
 
+  @Reference(name = "propertyIndex", target = "(type=property)")
+  def setPropertyIndex(i: IndexEditorProvider) {
+    propertyIndex = i
+  }
+
+  def unsetPropertyIndex(i: NodeStore) {
+    propertyIndex = null
+  }
+
+  @Reference(name = "referenceIndex", target = "(type=reference)")
+  def setReferenceIndex(i: IndexEditorProvider) {
+    referenceIndex = i
+  }
+
+  def unsetReferenceIndex(i: NodeStore) {
+    referenceIndex = null
+  }
 }
