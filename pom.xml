@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pfalabs</groupId>
     <artifactId>com.pfalabs.soak_2.11</artifactId>
     <packaging>bundle</packaging>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7</version>
     <name>Scala Oak</name>
     <description>Scala Oak Support</description>
     <licenses>
@@ -30,7 +29,7 @@
         <connection>scm:git:https://github.com/stillalex/soak.git</connection>
         <developerConnection>scm:git:git@github.com:stillalex/soak.git</developerConnection>
         <url>https://github.com/stillalex/soak</url>
-        <tag>HEAD</tag>
+        <tag>com.pfalabs.soak_2.11-0.0.7</tag>
     </scm>
     <distributionManagement>
         <repository>
