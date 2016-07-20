@@ -1,11 +1,11 @@
 SOAK - a Scala library for Oak
 ==============================
 
-![0.0.6](https://img.shields.io/badge/soak-0.0.6-blue.svg) *Latest release: 0.0.6 / January 12, 2016*
+![0.0.7](https://img.shields.io/badge/soak-0.0.7-blue.svg) *Latest release: 0.0.7 / July 20, 2016*
 
-Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.3.x```
+Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.5.x```
 
-[![Oak 1.3.5](https://img.shields.io/badge/Oak-1.3.5-green.svg)](https://jackrabbit.apache.org/oak/)
+[![Oak 1.5.5](https://img.shields.io/badge/Oak-1.5.5-green.svg)](https://jackrabbit.apache.org/oak/)
 [![Build Status](https://travis-ci.org/stillalex/soak.svg?branch=master)](https://travis-ci.org/stillalex/soak)
 [![Coverage Status](https://coveralls.io/repos/stillalex/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/stillalex/soak?branch=master)
 [![License](http://img.shields.io/:license-Apache%202-red.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
@@ -102,7 +102,7 @@ Use it
 <dependency>
   <groupId>com.pfalabs</groupId>
   <artifactId>com.pfalabs.soak_2.11</artifactId>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
 </dependency>
 ```
 
