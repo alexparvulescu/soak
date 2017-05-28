@@ -32,8 +32,8 @@
     </scm>
     <distributionManagement>
         <repository>
-            <id>bintray-pfalabs-soak</id>
-            <name>pfalabs-soak</name>
+            <id>bintray-pfalabs-maven</id>
+            <name>pfalabs-maven</name>
             <url>https://api.bintray.com/maven/pfalabs/maven/soak/;publish=1</url>
         </repository>
     </distributionManagement>
