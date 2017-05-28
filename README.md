@@ -1,7 +1,7 @@
 SOAK - a Scala library for Oak
 ==============================
 
-![0.0.7](https://img.shields.io/badge/soak-0.0.7-blue.svg) *Latest release: 0.0.7 / July 20, 2016*
+![0.0.8](https://img.shields.io/badge/soak-0.0.8-blue.svg) *Latest release: 0.0.8 / May 28, 2017*
 
 Built on [Scala](https://www.scala-lang.org/) ```2.12.2``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.6.x```
 
@@ -102,8 +102,8 @@ Use it
 ```xml
 <dependency>
   <groupId>com.pfalabs</groupId>
-  <artifactId>com.pfalabs.soak_2.11</artifactId>
-  <version>0.0.7</version>
+  <artifactId>com.pfalabs.soak_2.12</artifactId>
+  <version>0.0.8</version>
 </dependency>
 ```
 
