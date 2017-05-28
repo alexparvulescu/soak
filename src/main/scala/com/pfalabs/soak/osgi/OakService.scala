@@ -2,7 +2,7 @@ package com.pfalabs.soak.osgi
 
 import java.util.Hashtable
 
-import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.ContentRepository
@@ -86,7 +86,7 @@ class OakService {
     //TODO no async indexing yet
     //   .withAsyncIndexing()
 
-    initializers.map { _.getServices.foreach(oak.`with`(_)) }
+    initializers.map { _.getServices.asScala.foreach(oak.`with`(_)) }
 
     oak.createContentRepository()
   }
@@ -114,7 +114,7 @@ class OakService {
     propertyIndex = i
   }
 
-  def unsetPropertyIndex(i: NodeStore) {
+  def unsetPropertyIndex(i: IndexEditorProvider) {
     propertyIndex = null
   }
 
@@ -123,7 +123,7 @@ class OakService {
     referenceIndex = i
   }
 
-  def unsetReferenceIndex(i: NodeStore) {
+  def unsetReferenceIndex(i: IndexEditorProvider) {
     referenceIndex = null
   }
 }

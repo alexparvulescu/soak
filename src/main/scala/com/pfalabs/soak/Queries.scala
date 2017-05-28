@@ -1,6 +1,6 @@
 package com.pfalabs.soak
 
-import scala.collection.JavaConversions.iterableAsScalaIterable
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 import org.apache.jackrabbit.oak.api.{ Root, Tree }
 import org.apache.jackrabbit.oak.api.QueryEngine.{ NO_BINDINGS, NO_MAPPINGS }
@@ -12,7 +12,7 @@ object Queries {
 
   def xpath[T](xp: String, f: Tree => T, limit: Long, offset: Long)(root: Root): Iterable[T] = {
     val r = root.getQueryEngine().executeQuery(xp, "xpath", limit, offset, NO_BINDINGS, NO_MAPPINGS)
-    r.getRows().map(_.getPath()).map(root.getTree).map(f)
+    r.getRows().asScala.map(_.getPath()).map(root.getTree).map(f)
   }
 
   def xpathUnique[T](xp: String)(root: Root): Option[String] = {

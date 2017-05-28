@@ -1,6 +1,6 @@
 package com.pfalabs.soak
 
-import scala.collection.JavaConversions.asJavaIterable
+import scala.collection.JavaConverters.asJavaIterable
 import scala.util.{ Failure, Success }
 import org.apache.jackrabbit.oak.Oak
 import org.apache.jackrabbit.oak.api.{ ContentRepository, Root, Type }

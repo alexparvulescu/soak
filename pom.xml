@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pfalabs</groupId>
-    <artifactId>com.pfalabs.soak_2.11</artifactId>
+    <artifactId>com.pfalabs.soak_2.12</artifactId>
     <packaging>bundle</packaging>
     <version>0.0.8-SNAPSHOT</version>
     <name>Scala Oak</name>
@@ -15,13 +15,12 @@
         </license>
     </licenses>
     <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.11.5</scala.version>
-        <oak.version>1.5.5</oak.version>
-        <lucene.version>4.7.1</lucene.version>
+        <scala.version>2.12.2</scala.version>
+        <oak.version>1.6.1</oak.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.0.11</logback.version>
     </properties>
@@ -97,7 +96,7 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>5.0.0</version>
+            <version>6.0.0</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
@@ -120,8 +119,8 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
-            <version>2.2.5</version>
+            <artifactId>scalatest_2.12</artifactId>
+            <version>3.0.3</version>
             <scope>test</scope>
         </dependency>
 

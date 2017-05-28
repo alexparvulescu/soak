@@ -1,6 +1,8 @@
 package com.pfalabs.soak
 
-import scala.collection.convert.wrapAll.{ asJavaIterable, iterableAsScalaIterable }
+//import scala.collection.JavaConverters.{ asJavaIterable, iterableAsScalaIterable, iterableAsScalaIterableConverter }
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.collection.JavaConverters.asJavaIterableConverter
 
 import org.apache.jackrabbit.oak.api.{ PropertyState, Tree, Type }
 import org.apache.jackrabbit.oak.api.Type.{ BOOLEAN, BOOLEANS, LONG, LONGS, STRING, STRINGS }
@@ -29,7 +31,7 @@ object PropertyStates {
   def asSs(ps: PropertyState): Option[Iterable[String]] =
     Option(ps)
       .flatMap { p => asType(p, STRINGS) }
-      .map { x => iterableAsScalaIterable(x) }
+      .map { x => x.asScala }
 
   /**
    * @param t tree
@@ -47,7 +49,7 @@ object PropertyStates {
   def asLs(ps: PropertyState): Option[Iterable[Long]] =
     Option(ps)
       .flatMap { p => asType(p, LONGS) }
-      .map { x => x.map(_.asInstanceOf[Long]) }
+      .map { x => x.asScala.map(_.asInstanceOf[Long]) }
 
   /**
    * @param t tree
@@ -84,18 +86,18 @@ object PropertyStates {
   def asBs(ps: PropertyState): Option[Iterable[Boolean]] =
     Option(ps)
       .flatMap { p => asType(p, BOOLEANS) }
-      .map { x => x.map(_.booleanValue()) }
+      .map { x => x.asScala.map(_.booleanValue()) }
 
   private def asType[U](ps: PropertyState, t: Type[U]): Option[U] = {
     try {
       t match {
-        case STRING   => Some(ps.getValue(t))
-        case STRINGS  => Some(ps.getValue(t))
-        case LONG     => Some(ps.getValue(t))
-        case LONGS    => Some(ps.getValue(t))
-        case BOOLEAN  => Some(ps.getValue(t))
+        case STRING => Some(ps.getValue(t))
+        case STRINGS => Some(ps.getValue(t))
+        case LONG => Some(ps.getValue(t))
+        case LONGS => Some(ps.getValue(t))
+        case BOOLEAN => Some(ps.getValue(t))
         case BOOLEANS => Some(ps.getValue(t))
-        case _        => None
+        case _ => None
       }
     } catch {
       case t: IllegalArgumentException => None
@@ -122,22 +124,22 @@ object PropertyStates {
     }
 
     private[soak] case object STRINGS extends STypeIterable[String, java.lang.Iterable[String]] {
-      def convertValue(l: Iterable[String]) = asJavaIterable(l)
+      def convertValue(l: Iterable[String]) = l.asJava
       def convertType() = Type.STRINGS
     }
 
     private[soak] case object LONGS extends STypeIterable[Long, java.lang.Iterable[java.lang.Long]] {
-      def convertValue(l: Iterable[Long]) = asJavaIterable(l.map { _.asInstanceOf[java.lang.Long] })
+      def convertValue(l: Iterable[Long]) = l.map(_.asInstanceOf[java.lang.Long]).asJava
       def convertType() = Type.LONGS
     }
 
     private[soak] case object INTS extends STypeIterable[Int, java.lang.Iterable[java.lang.Long]] {
-      def convertValue(l: Iterable[Int]) = asJavaIterable(l.map { i => java.lang.Long.valueOf(i) })
+      def convertValue(l: Iterable[Int]) = l.map(java.lang.Long.valueOf(_)).asJava
       def convertType() = Type.LONGS
     }
 
     private[soak] case object BOOLS extends STypeIterable[Boolean, java.lang.Iterable[java.lang.Boolean]] {
-      def convertValue(l: Iterable[Boolean]) = asJavaIterable(l.map { _.asInstanceOf[java.lang.Boolean] })
+      def convertValue(l: Iterable[Boolean]) = l.map(_.asInstanceOf[java.lang.Boolean]).asJava
       def convertType() = Type.BOOLEANS
     }
 

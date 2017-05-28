@@ -1,6 +1,6 @@
 package com.pfalabs.soak
 
-import scala.collection.convert.wrapAll.iterableAsScalaIterable
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.util.Properties.lineSeparator
 
 import org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE
@@ -30,9 +30,9 @@ object Trees {
     val node = new StringBuilder()
     node.append(prepend).append(name)
     if (t.getPropertyCount > 0) {
-      node.append(t.getProperties().mkString("{", ", ", "}"))
+      node.append(t.getProperties().asScala.mkString("{", ", ", "}"))
     }
-    t.getChildren.foreach { tc =>
+    t.getChildren.asScala.foreach { tc =>
       {
         node.append(lineSeparator)
         node.append(mkString(tc, level + 1, prepend + prepend,
@@ -60,7 +60,7 @@ object Trees {
     def /?(n: String): Boolean = t.hasChild(n)
     def +(n: String): Tree = t.addChild(n)
 
-    def /:/ : Iterable[Tree] = t.getChildren
+    def /:/ : Iterable[Tree] = t.getChildren.asScala
     def /:/[U](m: Tree => U): Iterable[U] = getChildren(t, m)
     def /:/[U](f: Tree => Boolean, m: Tree => U): Iterable[U] = getChildren(t, f, m)
 
@@ -68,7 +68,7 @@ object Trees {
     def |?(p: String): Boolean = t.hasProperty(p)
     def |-(p: String) = t.removeProperty(p)
 
-    def |:| : Iterable[PropertyState] = t.getProperties
+    def |:| : Iterable[PropertyState] = t.getProperties.asScala
 
     def |+[U](p: String, v: U): TreeOps = {
       t.setProperty(p, v)
@@ -97,10 +97,12 @@ object Trees {
 
   def getChildren[U](t: Tree, m: Tree => U): Iterable[U] =
     t.getChildren()
+      .asScala
       .map(m)
 
   def getChildren[U](t: Tree, f: Tree => Boolean, m: Tree => U): Iterable[U] =
     t.getChildren()
+      .asScala
       .filter(f)
       .map(m)
 
