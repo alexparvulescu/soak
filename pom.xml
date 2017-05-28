@@ -4,7 +4,7 @@
     <groupId>com.pfalabs</groupId>
     <artifactId>com.pfalabs.soak_2.12</artifactId>
     <packaging>bundle</packaging>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.8</version>
     <name>Scala Oak</name>
     <description>Scala Oak Support</description>
     <licenses>
@@ -28,7 +28,7 @@
         <connection>scm:git:https://github.com/stillalex/soak.git</connection>
         <developerConnection>scm:git:git@github.com:stillalex/soak.git</developerConnection>
         <url>https://github.com/stillalex/soak</url>
-        <tag>HEAD</tag>
+        <tag>com.pfalabs.soak_2.12-0.0.8</tag>
     </scm>
     <distributionManagement>
         <repository>
