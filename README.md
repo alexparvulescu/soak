@@ -3,9 +3,10 @@ SOAK - a Scala library for Oak
 
 ![0.0.7](https://img.shields.io/badge/soak-0.0.7-blue.svg) *Latest release: 0.0.7 / July 20, 2016*
 
-Build with Scala ```2.11.x``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.5.x```
+Built on [Scala](https://www.scala-lang.org/) ```2.12.2``` and [Oak](https://jackrabbit.apache.org/oak/) ```1.6.x```
 
-[![Oak 1.5.5](https://img.shields.io/badge/Oak-1.5.5-green.svg)](https://jackrabbit.apache.org/oak/)
+[![Scala 2.12](https://img.shields.io/badge/Scala-2.12-red.svg)](https://www.scala-lang.org/)
+[![Oak 1.6.1](https://img.shields.io/badge/Oak-1.6.1-green.svg)](https://jackrabbit.apache.org/oak/)
 [![Build Status](https://travis-ci.org/stillalex/soak.svg?branch=master)](https://travis-ci.org/stillalex/soak)
 [![Coverage Status](https://coveralls.io/repos/stillalex/soak/badge.svg?branch=master&service=github)](https://coveralls.io/github/stillalex/soak?branch=master)
 [![License](http://img.shields.io/:license-Apache%202-red.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
